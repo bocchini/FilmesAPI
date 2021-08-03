@@ -18,7 +18,7 @@ namespace FilmesAPI.Controllers
         {
             filme.Id = id++;
             filmes.Add(filme);
-            return CreatedAtAction(nameof(RecuperaFilmePorId), new { id = filme.Id }, filme);
+            return CreatedAtAction(nameof(RecuperaFilmePorId), new { Id = filme.Id }, filme);
         }
 
         [HttpGet]
