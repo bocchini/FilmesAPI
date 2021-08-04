@@ -1,4 +1,6 @@
-﻿using FilmesAPI.Data;
+﻿using AutoMapper;
+using FilmesAPI.Data;
+using FilmesAPI.Data.DTOs;
 using FilmesAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -12,17 +14,21 @@ namespace FilmesAPI.Controllers
     public class FilmeController : ControllerBase
     {
         private FilmeContext _context;
+        private IMapper _mapper;
 
-        public FilmeController(FilmeContext context)
+        public FilmeController(FilmeContext context, IMapper mapper)
         {
             this._context = context;
+            this._mapper= mapper;
         }
         [HttpPost]
-        public IActionResult AdicionaFilme([FromBody]Filme filme)
+        public IActionResult AdicionaFilme([FromBody]CreateFilmeDTO filmeDTO)
         {
+            var filme = _mapper.Map<Filme>(filmeDTO);
+
             _context.Filmes.Add(filme);
             _context.SaveChanges();
-            return CreatedAtAction(nameof(RecuperaFilmePorId), new { Id = filme.Id }, filme);
+            return CreatedAtAction(nameof(RecuperaFilmePorId), new { Id = filme.Id }, filmeDTO);
         }
 
         [HttpGet]
@@ -37,21 +43,19 @@ namespace FilmesAPI.Controllers
             var filme = _context.Filmes.FirstOrDefault(filme => filme.Id == id);
             if(filme != null)
             {
-                return Ok(filme);
+                ReadFilmeDTO filmeDTO = _mapper.Map<ReadFilmeDTO>(filme);
+                return Ok(filmeDTO);
             }
             return NotFound();
         }
 
         [HttpPut("{id}")]
-        public IActionResult AtualizaFilme(int id,[FromBody]Filme filmeNovo)
+        public IActionResult AtualizaFilme(int id,[FromBody]UpdateFilmeDTO filmeDTO)
         {
             var filme = _context.Filmes.FirstOrDefault(filme => filme.Id == id);
             if (filme == null)
                 return NotFound();
-            filme.Titulo = filmeNovo.Titulo;
-            filme.Diretor = filmeNovo.Diretor;
-            filme.Duracao = filmeNovo.Duracao;
-            filme.Genero = filmeNovo.Genero;
+            _mapper.Map(filmeDTO, filme);
             _context.SaveChanges();
             return NoContent();
         }
